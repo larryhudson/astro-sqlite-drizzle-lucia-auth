@@ -1,0 +1,81 @@
+---
+import Layout from "@src/components/Layout.astro";
+
+import { isValidEmail } from "@src/utils/email";
+
+import { auth } from "@src/auth/lucia";
+import { LuciaError } from "lucia";
+
+let errorMessage: string | null = null;
+let emailInput = "";
+
+// check for form submissions
+if (Astro.request.method === "POST") {
+  const formData = await Astro.request.formData();
+  const email = formData.get("email");
+  const password = formData.get("password");
+  // basic check
+  if (typeof email === "string") {
+    emailInput = email;
+  }
+  const validPassword =
+    typeof password === "string" &&
+    password.length >= 1 &&
+    password.length <= 255;
+  if (isValidEmail(email) && validPassword) {
+    try {
+      // find user by key
+      // and validate password
+      const key = await auth.useKey("email", email.toLowerCase(), password);
+      const session = await auth.createSession({
+        userId: key.userId,
+        attributes: {},
+      });
+      Astro.locals.auth.setSession(session); // set session cookie
+      return Astro.redirect("/", 302); // redirect to profile page
+    } catch (e) {
+      if (
+        e instanceof LuciaError &&
+        (e.message === "AUTH_INVALID_KEY_ID" ||
+          e.message === "AUTH_INVALID_PASSWORD")
+      ) {
+        // user does not exist
+        // or invalid password
+        errorMessage = "Incorrect email or password";
+        Astro.response.status = 400;
+      } else {
+        errorMessage = "An unknown error occurred";
+        Astro.response.status = 500;
+      }
+    }
+  } else {
+    errorMessage = "Invalid input";
+    Astro.response.status = 400;
+  }
+}
+
+const session = await Astro.locals.auth.validate();
+if (session) {
+  console.log("session user");
+  console.log(session.user);
+  if (!session.user.isApproved) {
+    return Astro.redirect("/auth/waiting-room/");
+  }
+  return Astro.redirect("/");
+}
+---
+
+<Layout>
+  <h1>Sign in</h1>
+  <form method="post">
+    <label for="email">Email</label>
+    <input name="email" id="email" value={emailInput} /><br />
+    <label for="password">Password</label>
+    <input type="password" name="password" id="password" /><br />
+    <input type="submit" />
+  </form>
+  <p class="error">{errorMessage}</p>
+  <a href="/auth/password-reset">Reset password</a>
+  <a href="/auth/register">Create an account</a>
+</Layout>
+

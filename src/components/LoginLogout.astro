@@ -1,0 +1,10 @@
+---
+const { session } = Astro.props;
+---
+
+<p>
+{session ? (
+<span>Logged in as {session.user.email}. <form method="POST" action="/auth/logout"><button>Logout</button></form></span>
+) : (
+<span><a href="/auth/login">Login</a></span>
+)}
