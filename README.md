@@ -1,5 +1,13 @@
 # Astro Starter Kit: Minimal
 
+This is a small prototype for me to learn how to set up [Astro](https://astro.build/) with a SQLite database, [Drizzle ORM](https://orm.drizzle.team/) and [Lucia](https://lucia-auth.com/) for authentication.
+
+Useful links:
+
+- [Lucia's example for Astro + SQLite + email and password auth](https://github.com/lucia-auth/examples/blob/main/astro/email-and-password/)
+- [Lucia's docs for using Drizzle ORM](https://lucia-auth.com/guidebook/drizzle-orm/)
+- [Drizzle ORM's docs for using better-sqlite3](https://orm.drizzle.team/docs/quick-sqlite/better-sqlite3)
+
 ```sh
 npm create astro@latest -- --template minimal
 ```
